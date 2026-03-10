@@ -11,7 +11,6 @@ import java.util.List;
 /**
  * SnapHelper — Snaps furniture to walls, room edges, and adjacent items.
  * Also computes alignment guide lines for display in Canvas2D.
- * MEMBER 6 CONTRIBUTION: UX Polish & Smart Interactions
  */
 public class SnapHelper {
 
