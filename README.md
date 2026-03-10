@@ -30,11 +30,6 @@ javac -encoding UTF-8 -d bin -sourcepath src src/RoomCraftApp.java
 java -cp bin RoomCraftApp
 ```
 
-Or use the provided batch file:
-```
-run_project.bat
-```
-
 **Requirements:** JDK 8 or higher.
 
 ---
