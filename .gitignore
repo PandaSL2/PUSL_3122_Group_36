@@ -1,0 +1,12 @@
+# Compiled output — do not commit these
+bin/
+*.class
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.idea/
+*.iml
+.vscode/
