@@ -122,7 +122,7 @@ src/
 
 ## Group — Member Contributions
 
-### Member 1 — UI Overhaul & Branding
+### Theekshana — UI Overhaul & Branding
 
 **Files owned:**
 | File | Contribution |
@@ -137,7 +137,7 @@ src/
 
 ---
 
-### Member 2 — 3D Rendering Engine Upgrades
+### Achintha — 3D Rendering Engine Upgrades
 
 **Files owned:**
 | File | Contribution |
@@ -150,7 +150,7 @@ src/
 
 ---
 
-### Member 3 — Furniture System Expansion
+### Nilupul — Furniture System Expansion
 
 **Files owned:**
 | File | Contribution |
@@ -163,7 +163,7 @@ src/
 
 ---
 
-### Member 4 — Room Templates & Multi-Room Setup
+### Anjana — Room Templates & Multi-Room Setup
 
 **Files owned:**
 | File | Contribution |
@@ -176,7 +176,7 @@ src/
 
 ---
 
-### Member 5 — Measurements, Labels & Export
+### Isuri — Measurements, Labels & Export
 
 **Files owned:**
 | File | Contribution |
@@ -188,7 +188,7 @@ src/
 
 ---
 
-### Member 6 — UX Polish & Smart Interactions
+### Buddhini — UX Polish & Smart Interactions
 
 **Files owned:**
 | File | Contribution |
