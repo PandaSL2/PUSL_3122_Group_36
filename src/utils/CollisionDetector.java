@@ -11,7 +11,6 @@ import java.util.List;
 
 /**
  * CollisionDetector — Checks for overlap between furniture items.
- * MEMBER 6 CONTRIBUTION: UX Polish & Smart Interactions
  */
 public class CollisionDetector {
 

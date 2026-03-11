@@ -27,7 +27,6 @@ import java.util.List;
  * • Copy / Paste (Ctrl-C / Ctrl-V) (Member 6)
  * • Cursor-position reporting to StatusBar (Member 1 / 6)
  * MEMBER 5 CONTRIBUTION: Measurements & Labels
- * MEMBER 6 CONTRIBUTION: UX Polish & Smart Interactions
  */
 public class Canvas2D extends JPanel {
 
