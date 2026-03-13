@@ -10,13 +10,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * CollisionDetector — Checks for overlap between furniture items.
+ * Checks for overlap between furniture items.
  */
 public class CollisionDetector {
 
     /**
-     * Returns a list of furniture items that `moving` overlaps with.
-     * Uses rotated bounding-box intersection.
+     * Checks overlapping furniture with the moving item
+     * using rotated bounding boxes
      */
     public static List<Furniture> getCollisions(Furniture moving, Room room) {
         List<Furniture> collisions = new ArrayList<>();
@@ -43,7 +43,7 @@ public class CollisionDetector {
     }
 
     /**
-     * Returns true if `f` is fully within the room boundaries.
+     * Checks if the moving item overlaps with other furniture
      */
     public static boolean isWithinRoom(Furniture f, Room room) {
         Area fa = getArea(f);
