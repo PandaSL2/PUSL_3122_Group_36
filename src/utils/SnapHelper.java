@@ -9,15 +9,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * SnapHelper — Snaps furniture to walls, room edges, and adjacent items.
- * Also computes alignment guide lines for display in Canvas2D.
+ * Used to snap furniture to walls, edges of the room and other nearby furniture items.
  */
 public class SnapHelper {
 
     public static final double SNAP_THRESHOLD = 15.0; // cm
     public static final double WALL_THRESHOLD = 12.0; // cm
 
-    /** Guide line data for rendering on canvas */
+    /** Data used to draw guide lines on the canvas */
     public record GuideLine(double x1, double y1, double x2, double y2, Color color) {
     }
 
@@ -28,8 +27,7 @@ public class SnapHelper {
     }
 
     /**
-     * Attempt to snap `f` to walls, and align with adjacent furniture.
-     * Mutates f.x and f.y directly. Returns computed guide lines.
+     * Snaps furniture to walls or nearby items and returns the guide lines
      */
     public List<GuideLine> snap(Furniture f, Room room) {
         guideLines.clear();
@@ -38,29 +36,29 @@ public class SnapHelper {
         double w = f.getWidth(), d = f.getDepth();
         double roomW = room.getWidth(), roomD = room.getDepth();
 
-        // ── Snap to room walls ──
-        // Left wall
+        // Snap furniture to room walls
+        // Left wall check
         if (Math.abs(x) < WALL_THRESHOLD) {
             x = 0;
             guideLines.add(new GuideLine(0, 0, 0, roomD, new Color(99, 179, 237, 175)));
         }
-        // Right wall
+        // For the right wall
         if (Math.abs(x + w - roomW) < WALL_THRESHOLD) {
             x = roomW - w;
             guideLines.add(new GuideLine(roomW, 0, roomW, roomD, new Color(99, 179, 237, 175)));
         }
-        // Top wall
+        // For the Top wall
         if (Math.abs(y) < WALL_THRESHOLD) {
             y = 0;
             guideLines.add(new GuideLine(0, 0, roomW, 0, new Color(99, 179, 237, 175)));
         }
-        // Bottom wall
+        // For the Bottom wall
         if (Math.abs(y + d - roomD) < WALL_THRESHOLD) {
             y = roomD - d;
             guideLines.add(new GuideLine(0, roomD, roomW, roomD, new Color(99, 179, 237, 175)));
         }
 
-        // ── Snap to other furniture edges ──
+        // Align with other furniture
         for (Furniture other : room.getFurnitureList()) {
             if (other == f)
                 continue;
@@ -68,37 +66,37 @@ public class SnapHelper {
             double ox = other.getX(), oy = other.getY();
             double ow = other.getWidth(), od = other.getDepth();
 
-            // Align left edges
+            // Left edge alignment
             if (Math.abs(x - ox) < SNAP_THRESHOLD) {
                 x = ox;
                 guideLines.add(new GuideLine(ox, Math.min(y, oy), ox, Math.max(y + d, oy + od),
                         new Color(236, 72, 153, 175)));
             }
-            // Align right edges
+            // right edge alignment
             if (Math.abs(x + w - (ox + ow)) < SNAP_THRESHOLD) {
                 x = ox + ow - w;
                 guideLines.add(new GuideLine(ox + ow, Math.min(y, oy), ox + ow, Math.max(y + d, oy + od),
                         new Color(236, 72, 153, 175)));
             }
-            // Align top edges
+            // top edge alignment
             if (Math.abs(y - oy) < SNAP_THRESHOLD) {
                 y = oy;
                 guideLines.add(new GuideLine(Math.min(x, ox), oy, Math.max(x + w, ox + ow), oy,
                         new Color(236, 72, 153, 175)));
             }
-            // Align bottom edges
+            // bottom edge alignment
             if (Math.abs(y + d - (oy + od)) < SNAP_THRESHOLD) {
                 y = oy + od - d;
                 guideLines.add(new GuideLine(Math.min(x, ox), oy + od, Math.max(x + w, ox + ow), oy + od,
                         new Color(236, 72, 153, 175)));
             }
-            // Snap right of other
+            // Snap to right side of other furniture
             if (Math.abs(x - (ox + ow)) < SNAP_THRESHOLD) {
                 x = ox + ow;
                 guideLines.add(new GuideLine(ox + ow, Math.min(y, oy), ox + ow, Math.max(y + d, oy + od),
                         new Color(99, 220, 130, 175)));
             }
-            // Snap left of other
+            // Snap to left side of other furniture
             if (Math.abs(x + w - ox) < SNAP_THRESHOLD) {
                 x = ox - w;
                 guideLines.add(new GuideLine(ox, Math.min(y, oy), ox, Math.max(y + d, oy + od),
@@ -106,7 +104,7 @@ public class SnapHelper {
             }
         }
 
-        // ── Clamp within room ──
+        // Make sure furniture stays inside the room
         x = Math.max(0, Math.min(roomW - w, x));
         y = Math.max(0, Math.min(roomD - d, y));
 
