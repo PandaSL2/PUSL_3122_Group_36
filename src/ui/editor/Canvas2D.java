@@ -16,17 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Canvas2D — Enhanced 2D floor plan editor.
- * • Snap-to-wall and snap-to-furniture guide lines (Member 6)
- * • Collision detection with RED highlight (Member 6)
- * • Measurement dimension labels (Member 5)
- * • Room area in corner (Member 5)
- * • Compass rose (Member 5)
- * • Rubber-band multi-select (Member 6)
- * • Scroll-wheel zoom, Space+drag pan (Member 6)
- * • Copy / Paste (Ctrl-C / Ctrl-V) (Member 6)
- * • Cursor-position reporting to StatusBar (Member 1 / 6)
- * MEMBER 5 CONTRIBUTION: Measurements & Labels
+ * Canvas2D used for the floor plan editor
+ * Handles snapping, collision checking, measurements, zooming, panning, and other editor features
  */
 public class Canvas2D extends JPanel {
 
@@ -36,24 +27,24 @@ public class Canvas2D extends JPanel {
     private double offsetY = 60;
     private final int GRID_SIZE = 50;
 
-    // Interaction - single select
+    // Select one item
     private Furniture selectedFurniture;
     private DesignController controller;
     private boolean isDragging = false;
     private double dragStartX, dragStartY;
     private double initialFurnitureX, initialFurnitureY;
 
-    // Snap / collision
+    // Check snapping and collisions
     private SnapHelper snapHelper = new SnapHelper();
     private List<SnapHelper.GuideLine> guideLines = new ArrayList<>();
     private boolean hasCollision = false;
 
-    // Rubber-band selection
+    // Rubber band selection
     private Point rubberStart;
     private Rectangle rubberRect;
     private List<Furniture> multiSelected = new ArrayList<>();
 
-    // Zoom / Pan
+    // Zoom and pan
     private boolean spaceHeld = false;
     private int panStartX, panStartY;
     private double panOffsetXStart, panOffsetYStart;
@@ -62,10 +53,10 @@ public class Canvas2D extends JPanel {
     // Copy buffer
     private Furniture clipboard;
 
-    // Measurements overlay toggle
+    // Show or hide measurements
     private boolean showMeasurements = true;
 
-    // StatusBar reference (optional)
+    // Status bar reference
     private StatusBar statusBar;
 
     public interface SelectionListener {
@@ -74,7 +65,7 @@ public class Canvas2D extends JPanel {
 
     private SelectionListener selectionListener;
 
-    // ─── Constructor ────────────────────────────────────────────────────────
+    // Constructor
 
     public Canvas2D() {
         setBackground(new Color(18, 26, 55));
@@ -85,7 +76,7 @@ public class Canvas2D extends JPanel {
         setupKeyboardHandlers();
     }
 
-    // ─── Setup ──────────────────────────────────────────────────────────────
+    // Setup 
 
     private void setupMouseHandlers() {
         MouseAdapter ma = new MouseAdapter() {
@@ -94,7 +85,7 @@ public class Canvas2D extends JPanel {
             public void mousePressed(MouseEvent e) {
                 requestFocusInWindow();
 
-                // Space + drag = pan
+                // Hold Space and drag to move the view
                 if (spaceHeld) {
                     isPanning = true;
                     panStartX = e.getX();
@@ -110,7 +101,7 @@ public class Canvas2D extends JPanel {
                 double roomX = toRoomX(e.getX());
                 double roomY = toRoomY(e.getY());
 
-                // Hit test (reverse Z-order)
+                // Check clicked object from top
                 List<Furniture> list = room.getFurnitureList();
                 for (int i = list.size() - 1; i >= 0; i--) {
                     Furniture f = list.get(i);
@@ -134,7 +125,7 @@ public class Canvas2D extends JPanel {
                     }
                 }
 
-                // Nothing hit → start rubber-band
+                // No item clicked, start rubber-band selection
                 selectedFurniture = null;
                 multiSelected.clear();
                 rubberStart = e.getPoint();
@@ -156,14 +147,14 @@ public class Canvas2D extends JPanel {
                     return;
                 }
 
-                // Rubber-band
+                // Rubber band
                 if (rubberStart != null && selectedFurniture == null) {
                     int x = Math.min(rubberStart.x, e.getX());
                     int y = Math.min(rubberStart.y, e.getY());
                     int w = Math.abs(e.getX() - rubberStart.x);
                     int h = Math.abs(e.getY() - rubberStart.y);
                     rubberRect = new Rectangle(x, y, w, h);
-                    // Select all furniture within rubber rect
+                    // Select all items inside the selected area
                     if (room != null) {
                         multiSelected.clear();
                         for (Furniture f : room.getFurnitureList()) {
@@ -177,7 +168,7 @@ public class Canvas2D extends JPanel {
                     return;
                 }
 
-                // Drag furniture
+                // Drag furniture to move it
                 if (isDragging && selectedFurniture != null && room != null) {
                     double roomX = toRoomX(e.getX());
                     double roomY = toRoomY(e.getY());
@@ -186,20 +177,20 @@ public class Canvas2D extends JPanel {
                     double newX = initialFurnitureX + dx;
                     double newY = initialFurnitureY + dy;
 
-                    // Grid snap (10cm)
+                    // Align item to the 10 cm grid
                     newX = Math.round(newX / 10.0) * 10;
                     newY = Math.round(newY / 10.0) * 10;
 
                     selectedFurniture.setX(newX);
                     selectedFurniture.setY(newY);
 
-                    // Wall + furniture snap
+                    // Check snapping with walls and furniture
                     guideLines = snapHelper.snap(selectedFurniture, room);
 
-                    // Collision check
+                    // Check item collision
                     hasCollision = CollisionDetector.hasCollision(selectedFurniture, room);
 
-                    // Status bar cursor
+                    // Show cursor position on status bar
                     if (statusBar != null)
                         statusBar.setCursorPos(selectedFurniture.getX(), selectedFurniture.getY());
 
@@ -222,7 +213,7 @@ public class Canvas2D extends JPanel {
                 if (isDragging && selectedFurniture != null) {
                     isDragging = false;
                     if (hasCollision) {
-                        // Revert position on collision
+                        // Reset position if collision occurs
                         selectedFurniture.setPosition(initialFurnitureX, initialFurnitureY);
                         JOptionPane.showMessageDialog(Canvas2D.this,
                                 "Furniture overlaps another item — position reverted.",
@@ -248,12 +239,12 @@ public class Canvas2D extends JPanel {
 
             @Override
             public void mouseWheelMoved(MouseWheelEvent e) {
-                // Zoom toward cursor position
+                // Zoom toward the cursor
                 double oldScale = scale;
                 double factor = e.getWheelRotation() < 0 ? 1.12 : 0.89;
                 scale = Math.max(0.1, Math.min(10.0, scale * factor));
 
-                // Adjust offset so cursor stays fixed
+                // Adjust offset to keep cursor in same place
                 double mouseRX = (e.getX() - offsetX) / oldScale;
                 double mouseRY = (e.getY() - offsetY) / oldScale;
                 offsetX = e.getX() - mouseRX * scale;
@@ -286,7 +277,7 @@ public class Canvas2D extends JPanel {
             }
         });
 
-        // Ctrl+C — copy
+        // Ctrl+C to copy
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(
                 KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK), "copy");
         getActionMap().put("copy", new AbstractAction() {
@@ -297,7 +288,7 @@ public class Canvas2D extends JPanel {
             }
         });
 
-        // Ctrl+V — paste
+        // Ctrl+V to paste
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(
                 KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK), "paste");
         getActionMap().put("paste", new AbstractAction() {
@@ -312,7 +303,7 @@ public class Canvas2D extends JPanel {
             }
         });
 
-        // Delete / Backspace
+        // Delete item (Delete / Backspace)
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "delete");
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0), "delete");
         getActionMap().put("delete", new AbstractAction() {
@@ -327,7 +318,7 @@ public class Canvas2D extends JPanel {
             }
         });
 
-        // Ctrl+Z / Ctrl+Y
+        // Undo / redo actions
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(
                 KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK), "undo");
         getActionMap().put("undo", new AbstractAction() {
@@ -349,7 +340,7 @@ public class Canvas2D extends JPanel {
             }
         });
 
-        // Escape — deselect
+        // Clear selection with Escape key
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape");
         getActionMap().put("escape", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
@@ -361,7 +352,7 @@ public class Canvas2D extends JPanel {
             }
         });
 
-        // M — toggle measurements
+        // Press M to show or hide measurements
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_M, 0), "toggleMeasure");
         getActionMap().put("toggleMeasure", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
@@ -371,7 +362,7 @@ public class Canvas2D extends JPanel {
         });
     }
 
-    // ─── Painting ────────────────────────────────────────────────────────────
+    // Painting 
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -381,7 +372,7 @@ public class Canvas2D extends JPanel {
             return;
         }
 
-        // Professional Blueprint Background
+        // Blueprint style background
         g.setColor(new Color(10, 15, 35));
         g.fillRect(0, 0, getWidth(), getHeight());
 
@@ -389,7 +380,7 @@ public class Canvas2D extends JPanel {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-        // Auto-fit on first paint if scale not manually set
+        // Fit view automatically when first loaded
         if (scale == 1.0)
             fitRoom();
 
@@ -397,12 +388,12 @@ public class Canvas2D extends JPanel {
         g2.translate(offsetX, offsetY);
         g2.scale(scale, scale);
 
-        // 1. Floor + shadow
+        // Draw floor and shadow
         Color fc = room.getFloorColor();
         g2.setColor(new Color(fc.getRed(), fc.getGreen(), fc.getBlue(), 180));
         g2.fillRect(0, 0, (int) room.getWidth(), (int) room.getDepth());
 
-        // 2. Grid
+        // Draw grid
         g2.setColor(new Color(0, 0, 0, 22));
         g2.setStroke(new BasicStroke(0.5f));
         for (double x = 0; x <= room.getWidth(); x += GRID_SIZE)
@@ -410,12 +401,12 @@ public class Canvas2D extends JPanel {
         for (double y = 0; y <= room.getDepth(); y += GRID_SIZE)
             g2.draw(new Line2D.Double(0, y, room.getWidth(), y));
 
-        // 3. Room wall outline
+        // Room walls
         g2.setColor(new Color(30, 45, 80));
         g2.setStroke(new BasicStroke(3.5f));
         g2.drawRect(0, 0, (int) room.getWidth(), (int) room.getDepth());
 
-        // 4. Snap guide lines (below furniture)
+        // Snap guide lines
         for (SnapHelper.GuideLine gl : guideLines) {
             g2.setStroke(new BasicStroke(1.2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER,
                     10, new float[] { 5, 4 }, 0));
@@ -423,17 +414,17 @@ public class Canvas2D extends JPanel {
             g2.draw(new Line2D.Double(gl.x1(), gl.y1(), gl.x2(), gl.y2()));
         }
 
-        // 5. Furniture
+        // Furniture
         for (Furniture f : room.getFurnitureList()) {
             drawFurniture(g2, f);
         }
 
-        // 6. Multi-select highlight
+        // Selected items highlight
         for (Furniture f : multiSelected) {
             drawSelectionHighlight(g2, f, new Color(99, 179, 237, 80));
         }
 
-        // 7. Rubber band
+        // Rubber band selection
         if (rubberRect != null) {
             g2.setTransform(saved);
             g2.setColor(new Color(99, 179, 237, 30));
@@ -447,19 +438,19 @@ public class Canvas2D extends JPanel {
             g2.scale(scale, scale);
         }
 
-        // 8. Measurements overlay
+        // Measurements
         if (showMeasurements)
             drawMeasurements(g2);
 
-        // 9. Room info (bottom of room)
+        // Show room information at bottom
         drawRoomInfo(g2);
 
         g2.setTransform(saved);
 
-        // 10. Compass rose (overlay — screen space)
+        // Draw compass on screen
         drawCompassRose(g2, getWidth() - 60, 60, 40);
 
-        // 11. Hint bar
+        // Show hint bar
         drawHintBar(g2);
     }
 
@@ -483,17 +474,17 @@ public class Canvas2D extends JPanel {
         boolean collision = isSelected && hasCollision;
         boolean inMulti = multiSelected.contains(f);
 
-        // Shadow
+        // Draw shadow
         g2.setColor(new Color(0, 0, 0, 40));
         g2.fill(new Rectangle2D.Double(f.getX() + 3, f.getY() + 3, f.getWidth(), f.getDepth()));
 
-        // Render Professional Schematic Icon
+        // Draw furniture icon
         Color fill = collision ? new Color(255, 80, 80, 180) : f.getColor();
         utils.SchematicPainter.paintIcon(g2, f.getType(), (int) f.getX(), (int) f.getY(), (int) f.getWidth(),
                 (int) f.getDepth(),
                 fill, isSelected || inMulti);
 
-        // Label
+        // Draw label
         if (f.getWidth() * scale > 30 && f.getDepth() * scale > 18) {
             int fontSize = (int) Math.max(6, Math.min(12, f.getWidth() / 18));
             g2.setFont(new Font("Segoe UI", Font.BOLD, fontSize));
@@ -505,7 +496,7 @@ public class Canvas2D extends JPanel {
             g2.drawString(label, lx, ly);
         }
 
-        // Front-direction arrow
+        // Show front direction arrow
         if (f.getWidth() * scale > 40) {
             double ax = f.getX() + f.getWidth() / 2.0;
             double frontY = f.getY() + f.getDepth();
@@ -515,18 +506,18 @@ public class Canvas2D extends JPanel {
             g2.fillPolygon(xs, ys, 3);
         }
 
-        // Selected: dimension labels adjacent to box
+        // If selected, show dimension labels
         if (isSelected && showMeasurements) {
             g2.setFont(new Font("Segoe UI", Font.BOLD, (int) Math.max(7, 10 / scale)));
             g2.setColor(new Color(236, 220, 60));
             g2.setStroke(new BasicStroke(0.8f));
-            // Width label (above)
+            // Show width label above the item
             String wLabel = String.format("%.0fcm", f.getWidth());
             FontMetrics fm2 = g2.getFontMetrics();
             g2.drawString(wLabel,
                     (float) (f.getX() + (f.getWidth() - fm2.stringWidth(wLabel)) / 2f),
                     (float) (f.getY() - 4));
-            // Depth label (right)
+            // Depth label (right side)
             String dLabel = String.format("%.0fcm", f.getDepth());
             AffineTransform rotLabel = g2.getTransform();
             g2.rotate(-Math.PI / 2, f.getX() + f.getWidth() + 10, f.getY() + f.getDepth() / 2);
@@ -556,7 +547,7 @@ public class Canvas2D extends JPanel {
         g2.setStroke(new BasicStroke(1.0f));
         g2.setFont(new Font("Segoe UI", Font.BOLD, (int) Math.max(9, 13 / scale)));
 
-        // Width dimension line (above room)
+        // Width dimension line above room
         double arrowY = -28;
         g2.draw(new Line2D.Double(0, arrowY, w, arrowY));
         // Arrow heads
@@ -564,7 +555,7 @@ public class Canvas2D extends JPanel {
         g2.draw(new Line2D.Double(0, arrowY, 7, arrowY + 4));
         g2.draw(new Line2D.Double(w, arrowY, w - 7, arrowY - 4));
         g2.draw(new Line2D.Double(w, arrowY, w - 7, arrowY + 4));
-        // Tick marks at each metre
+        // Tick marks for each metre
         for (double x = 100; x < w; x += 100) {
             g2.draw(new Line2D.Double(x, arrowY - 4, x, arrowY + 4));
         }
@@ -572,7 +563,7 @@ public class Canvas2D extends JPanel {
         FontMetrics fm = g2.getFontMetrics();
         g2.drawString(wLabel, (float) ((w - fm.stringWidth(wLabel)) / 2.0), (float) (arrowY - 5));
 
-        // Depth dimension line (left of room)
+        // Depth dimension line (left side)
         double arrowX = -28;
         g2.draw(new Line2D.Double(arrowX, 0, arrowX, d));
         g2.draw(new Line2D.Double(arrowX, 0, arrowX - 4, 7));
@@ -589,7 +580,7 @@ public class Canvas2D extends JPanel {
         g2.drawString(dLabel, (float) ((arrowX - fm.stringWidth(dLabel) / 2.0)), (float) (d / 2 - 4));
         g2.setTransform(at);
 
-        // Grid labels (50cm markers)
+        // Grid labels (50 cm)
         g2.setFont(new Font("Segoe UI", Font.PLAIN, (int) Math.max(6, 9 / scale)));
         g2.setColor(new Color(130, 155, 195, 160));
         for (double x = 0; x <= w; x += 100) {
@@ -615,13 +606,13 @@ public class Canvas2D extends JPanel {
         g2.setColor(new Color(99, 179, 237, 150));
         g2.setStroke(new BasicStroke(1.5f));
         g2.drawOval(cx - r, cy - r, r * 2, r * 2);
-        // N arrow (red)
+        // North arrow (red)
         g2.setColor(new Color(236, 72, 153, 220));
         g2.fillPolygon(new int[] { cx, cx - 7, cx + 7 }, new int[] { cy - r + 4, cy + 5, cy + 5 }, 3);
-        // S arrow (white)
+        // South arrow (white)
         g2.setColor(new Color(180, 190, 210, 180));
         g2.fillPolygon(new int[] { cx, cx - 7, cx + 7 }, new int[] { cy + r - 4, cy - 5, cy - 5 }, 3);
-        // N label
+        // North label
         g2.setFont(new Font("Segoe UI", Font.BOLD, 11));
         g2.setColor(Color.WHITE);
         g2.drawString("N", cx - 4, cy - r + 16);
@@ -639,7 +630,7 @@ public class Canvas2D extends JPanel {
         g2.drawString(hint, barX + 10, barY + 12);
     }
 
-    // ─── Helpers ─────────────────────────────────────────────────────────────
+    // Helper methods
 
     public void fitRoom() {
         if (room == null)
@@ -689,11 +680,11 @@ public class Canvas2D extends JPanel {
         return lum > 140 ? new Color(30, 30, 30) : Color.WHITE;
     }
 
-    // ─── Public API ──────────────────────────────────────────────────────────
+    // Public methods
 
     public void setRoom(Room room) {
         this.room = room;
-        scale = 1.0; // trigger auto-fit on next paint
+        scale = 1.0; // Trigger auto fit on next paint
         guideLines.clear();
         hasCollision = false;
         multiSelected.clear();
