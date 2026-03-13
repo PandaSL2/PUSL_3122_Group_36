@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Used to snap furniture to walls, edges of the room and other nearby furniture items.
+ * Used to furniture to walls, edges of the room and other nearby furniture items.
  */
 public class SnapHelper {
 
