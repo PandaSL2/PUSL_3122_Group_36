@@ -117,7 +117,7 @@ src/
 
 ## Group — Member Contributions
 
-### Theekshana — UI Overhaul & Branding
+### Kanewalage Siriwardhana — UI Overhaul & Branding
 
 **Files owned:**
 | File | Contribution |
@@ -132,7 +132,7 @@ src/
 
 ---
 
-### Achintha — 3D Rendering Engine Upgrades
+### Wanigathungage Gimhana — 3D Rendering Engine Upgrades
 
 **Files owned:**
 | File | Contribution |
@@ -145,7 +145,7 @@ src/
 
 ---
 
-### Nilupul — Furniture System Expansion
+### Kumarapeli_Induranga — Furniture System Expansion
 
 **Files owned:**
 | File | Contribution |
@@ -158,7 +158,7 @@ src/
 
 ---
 
-### Anjana — Room Templates & Multi-Room Setup
+### Semasinghe_Semasinghe — Room Templates & Multi-Room Setup
 
 **Files owned:**
 | File | Contribution |
@@ -171,7 +171,7 @@ src/
 
 ---
 
-### Isuri — Measurements, Labels & Export
+### Udawaththa Wijegunawardhana — Measurements, Labels & Export
 
 **Files owned:**
 | File | Contribution |
@@ -183,7 +183,7 @@ src/
 
 ---
 
-### Buddhini — UX Polish & Smart Interactions
+### Karunanayaka-Wijekoon — UX Polish & Smart Interactions
 
 **Files owned:**
 | File | Contribution |
