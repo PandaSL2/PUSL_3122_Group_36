@@ -13,7 +13,6 @@ import java.awt.event.*;
 /**
  * PortfolioDashboard — Dark themed, card-based portfolio view with hover
  * effects.
- * MEMBER 1 CONTRIBUTION: UI Overhaul & Branding
  */
 public class PortfolioDashboard extends JPanel {
     private MainFrame mainFrame;

@@ -8,10 +8,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
 
-/**
- * LoginPanel — Full redesign with gradient dark background and premium card UI.
- * MEMBER 1 CONTRIBUTION: UI Overhaul & Branding
- */
+
 public class LoginPanel extends JPanel {
     private MainFrame mainFrame;
     private AuthController authController;

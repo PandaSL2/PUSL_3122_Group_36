@@ -9,11 +9,7 @@ import ui.editor.EditorPanel;
 import ui.components.StatusBar;
 import controllers.DesignController;
 
-/**
- * MainFrame — Main application window with dark theme, cards layout, and status
- * bar.
- * MEMBER 1 CONTRIBUTION: UI Overhaul & Branding
- */
+
 public class MainFrame extends JFrame {
 
     private ui.components.SidebarPanel sidebar;
