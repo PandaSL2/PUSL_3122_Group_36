@@ -12,10 +12,7 @@ public class AuthController {
         this.supabase = new SupabaseClient();
     }
 
-    /**
-     * Login: query 'users' table for matching username + hashed password.
-     * Returns true if exactly one row found.
-     */
+   
     public CompletableFuture<Boolean> login(String username, String password) {
         return supabase.login(username, password).thenApply(json -> {
             // A non-empty JSON array means the user was found

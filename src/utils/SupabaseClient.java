@@ -6,11 +6,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.concurrent.CompletableFuture;
 
-/**
- * SupabaseClient — REST client that uses a custom 'users' table.
- * No email required: just username + password (SHA-256 hashed).
- * No external dependencies.
- */
+
 public class SupabaseClient {
     private static final String URL = "https://urwhdyuugvbadojrxbdh.supabase.co";
     private static final String ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVyd2hkeXV1"

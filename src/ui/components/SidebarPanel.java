@@ -7,9 +7,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.function.Consumer;
 
-/**
- * SidebarPanel — Premium vertical navigation sidebar.
- */
+
 public class SidebarPanel extends JPanel {
     private static final Color BG = new Color(14, 20, 45);
     private static final Color ACCENT = new Color(99, 179, 237);

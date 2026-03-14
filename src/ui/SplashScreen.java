@@ -5,7 +5,6 @@ import java.awt.*;
 
 /**
  * SplashScreen — Animated startup splash with logo and progress bar.
- * MEMBER 1 CONTRIBUTION: UI Overhaul & Branding
  */
 public class SplashScreen extends JWindow {
 
