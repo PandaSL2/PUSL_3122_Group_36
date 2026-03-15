@@ -4,7 +4,7 @@ public class Matrix4x4 {
     public double[][] m = new double[4][4];
 
     public Matrix4x4() {
-        // Identity by default
+     
         for (int i = 0; i < 4; i++)
             m[i][i] = 1;
     }
