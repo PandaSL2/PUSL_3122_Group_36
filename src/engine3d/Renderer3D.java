@@ -10,11 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Renderer3D — Software rasterizer with ambient+diffuse+specular lighting,
- * procedural floor texture, ceiling, and extended furniture geometry.
 
- */
 public class Renderer3D {
 
     private static final int WIDTH = 1024;
