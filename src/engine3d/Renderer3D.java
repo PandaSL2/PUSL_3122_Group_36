@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * Renderer3D — Software rasterizer with ambient+diffuse+specular lighting,
  * procedural floor texture, ceiling, and extended furniture geometry.
- * MEMBER 2 CONTRIBUTION: 3D Engine Upgrades
+
  */
 public class Renderer3D {
 

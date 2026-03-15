@@ -2,7 +2,6 @@ package engine3d;
 
 /**
  * Camera — Extended with pitch/yaw smooth orbit, zoom, and first-person mode.
- * MEMBER 2 CONTRIBUTION: 3D Engine Upgrades
  */
 public class Camera {
 

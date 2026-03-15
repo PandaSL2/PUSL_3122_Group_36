@@ -11,7 +11,7 @@ import java.awt.event.*;
 /**
  * Canvas3D — 3D view with mouse drag orbit, scroll zoom, WASD walk, FPS
  * counter.
- * MEMBER 2 CONTRIBUTION: 3D Engine Upgrades
+
  */
 public class Canvas3D extends JPanel {
 
