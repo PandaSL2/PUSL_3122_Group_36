@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Improvements to user interaction and smoother UI behavior
  * Checks for overlap between furniture items.
  */
 public class CollisionDetector {

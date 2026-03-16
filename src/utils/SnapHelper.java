@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Improvements to user interaction and smoother UI behavior
  * Used to furniture to walls, edges of the room and other nearby furniture items.
  */
 public class SnapHelper {
