@@ -19,6 +19,7 @@ public class CollisionDetector {
      * Checks overlapping furniture with the moving item
      * using rotated bounding boxes
      */
+    // Helps detect overlapping furniture to prevent invalid placements
     public static List<Furniture> getCollisions(Furniture moving, Room room) {
         List<Furniture> collisions = new ArrayList<>();
         Area movingArea = getArea(moving);
