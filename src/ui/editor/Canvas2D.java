@@ -1,45 +1,47 @@
 package ui.editor;
 
-import models.Room;
-import models.Furniture;
-import utils.CollisionDetector;
-import utils.SnapHelper;
-import utils.commands.MoveFurnitureCommand;
 import controllers.DesignController;
-import ui.components.StatusBar;
-
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.*;
+import models.Furniture;
+import models.Room;
+import ui.components.StatusBar;
+import utils.CollisionDetector;
+import utils.SnapHelper;
+import utils.commands.MoveFurnitureCommand;
 
 /**
- * Canvas2D — Enhanced 2D floor plan editor.
+ * Interactive 2D floor plan canvas for the RoomCraft application.
+ * <p>
+ * Provides the primary visual editor for placing, moving, rotating, and arranging
+ * furniture within a room model. Supports intuitive drag-and-drop interaction,
+ * assisted placement (snapping, collision avoidance), multi-selection, zooming/panning,
+ * copy-paste, undo/redo integration, and informative overlays (measurements, compass, grid).
+ * </p>
  * 
- * This class represents the main interactive 2D editor used
- * for designing and arranging furniture inside a room.
+ * <p>Key implemented features:</p>
+ * <ul>
+ *   <li>Snap-to-wall and snap-to-furniture guide lines</li>
+ *   <li>Real-time collision detection with visual feedback and position reversion</li>
+ *   <li>Room and furniture dimension overlays (toggleable with 'M')</li>
+ *   <li>Compass rose indicating orientation</li>
+ *   <li>Rubber-band multi-selection</li>
+ *   <li>Mouse-wheel zoom centered on cursor</li>
+ *   <li>Spacebar + drag panning</li>
+ *   <li>Clipboard-based copy/paste (Ctrl+C/V)</li>
+ *   <li>Status bar integration for cursor coordinates, zoom level, and selection</li>
+ * </ul>
  * 
- * The canvas allows users to visually manipulate furniture
- * objects through drag-and-drop interactions while providing
- * useful design assistance such as snapping, collision
- * detection, measurements, and visual guides.
+ * <p>Contribution: Measurement overlays, dimension labels, compass indicator,
+ * room/area information display, and enhanced visual feedback mechanisms.</p>
  * 
- * Key Features Implemented:
- * • Snap-to-wall and snap-to-furniture guide lines
- * • Collision detection with visual warning
- * • Measurement dimension labels
- * • Room area display
- * • Compass orientation indicator
- * • Rubber-band multi-selection
- * • Zooming and panning controls
- * • Copy and paste functionality
- * • Cursor position reporting to StatusBar
- * 
- * Contrbution:
- * Implementation of measurements overlay, dimension labels,
- * compass display, and room information indicators.
+ * @author [10953373 - Udawaththa Wijegunawardhana]
+ * @version 2.0
+ * @since PUSL3122 Group Project
  */
 public class Canvas2D extends JPanel {
 
@@ -47,56 +49,52 @@ public class Canvas2D extends JPanel {
     private double scale = 1.0;
     private double offsetX = 60;
     private double offsetY = 60;
-    private final int GRID_SIZE = 50;
+    private final int GRID_SIZE = 50; //cm
 
-    // Selection & Drag Interaction
+    // Selection & interaction state
     private Furniture selectedFurniture;
     private DesignController controller;
     private boolean isDragging = false;
     private double dragStartX, dragStartY;
     private double initialFurnitureX, initialFurnitureY;
 
-    // Snap Detection
+    // Snapping & collision
     private SnapHelper snapHelper = new SnapHelper();
     private List<SnapHelper.GuideLine> guideLines = new ArrayList<>();
     private boolean hasCollision = false;
 
-    // Multi-Selection (Rubber Band)
+    // Rubber-band multi-selection
     private Point rubberStart;
     private Rectangle rubberRect;
     private List<Furniture> multiSelected = new ArrayList<>();
 
-    // Zoom / Pan Controls
+    // View control (pan/zoom)
     private boolean spaceHeld = false;
     private int panStartX, panStartY;
     private double panOffsetXStart, panOffsetYStart;
     private boolean isPanning = false;
 
-    // Clipboard Copy/Paste
+    // Clipboard
     private Furniture clipboard;
 
-    // Measurements overlay toggle
+    // UI toggles
     private boolean showMeasurements = true;
 
-    // StatusBar reference
+    // External UI references
     private StatusBar statusBar;
 
     /**
-     * Listener interface used to notify other UI components
-     * when the furniture selection changes.
+     * Listener interface for notifying parent components of selection changes.
      */
     public interface SelectionListener {
         void onSelectionChanged(Furniture f);
     }
 
-    /** Listener instance used for selection change callbacks */
+
     private SelectionListener selectionListener;
 
-    // Constructor 
-
     /**
-     * Initializes the Canvas2D component and sets up
-     * mouse and keyboard interaction handlers.
+     * Constructs the canvas and initializes input handlers.
      */
     public Canvas2D() {
         setBackground(new Color(18, 26, 55));
@@ -107,28 +105,16 @@ public class Canvas2D extends JPanel {
         setupKeyboardHandlers();
     }
 
-    // Setup
-
     /**
-     * Configures mouse event handlers responsible for:
-     * - Selecting furniture
-     * - Dragging furniture
-     * - Rubber-band selection
-     * - Zooming
-     * - Panning
+     * Registers mouse listeners for selection, dragging, rubber-band,
+     * panning, and wheel-based zooming.
      */
     private void setupMouseHandlers() {
         MouseAdapter ma = new MouseAdapter() {
-
-            /**
-             * Triggered when the mouse button is pressed.
-             * Handles selection, panning, and rubber-band initialization.
-             */
             @Override
             public void mousePressed(MouseEvent e) {
                 requestFocusInWindow();
 
-                // Space + drag = pan
                 if (spaceHeld) {
                     isPanning = true;
                     panStartX = e.getX();
@@ -141,10 +127,11 @@ public class Canvas2D extends JPanel {
 
                 if (room == null)
                     return;
+
                 double roomX = toRoomX(e.getX());
                 double roomY = toRoomY(e.getY());
 
-                // Hit test furniture from top-most layer (reverse Z-order)
+                // Select topmost furniture under cursor (reverse iteration)
                 List<Furniture> list = room.getFurnitureList();
                 for (int i = list.size() - 1; i >= 0; i--) {
                     Furniture f = list.get(i);
@@ -168,7 +155,7 @@ public class Canvas2D extends JPanel {
                     }
                 }
 
-                // No furniture selected → start rubber-band selection
+                // No hit → begin rubber-band selection
                 selectedFurniture = null;
                 multiSelected.clear();
                 rubberStart = e.getPoint();
@@ -180,12 +167,7 @@ public class Canvas2D extends JPanel {
                 repaint();
             }
 
-            /**
-             * Handles mouse drag events used for:
-             * - Moving furniture
-             * - Rubber-band selection
-             * - Panning the canvas
-             */
+            
             @Override
             public void mouseDragged(MouseEvent e) {
                 // Panning
@@ -322,9 +304,7 @@ public class Canvas2D extends JPanel {
     }
 
     /**
-     * Configures keyboard shortcuts used within the editor.
-     * Includes commands for copy/paste, delete, undo/redo,
-     * panning, and measurement toggling.
+     * Registers keyboard shortcuts for common editing operations.
      */
     private void setupKeyboardHandlers() {
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(' '), "spaceDown");
@@ -683,12 +663,15 @@ public class Canvas2D extends JPanel {
         g2.setColor(new Color(99, 179, 237, 150));
         g2.setStroke(new BasicStroke(1.5f));
         g2.drawOval(cx - r, cy - r, r * 2, r * 2);
+
         // N arrow (red)
         g2.setColor(new Color(236, 72, 153, 220));
         g2.fillPolygon(new int[] { cx, cx - 7, cx + 7 }, new int[] { cy - r + 4, cy + 5, cy + 5 }, 3);
+        
         // S arrow (white)
         g2.setColor(new Color(180, 190, 210, 180));
         g2.fillPolygon(new int[] { cx, cx - 7, cx + 7 }, new int[] { cy + r - 4, cy - 5, cy - 5 }, 3);
+        
         // N label
         g2.setFont(new Font("Segoe UI", Font.BOLD, 11));
         g2.setColor(Color.WHITE);
@@ -707,7 +690,7 @@ public class Canvas2D extends JPanel {
         g2.drawString(hint, barX + 10, barY + 12);
     }
 
-    //  Helpers 
+    // View & Coordinate Helpers
     public void fitRoom() {
         if (room == null)
             return;
