@@ -1,10 +1,5 @@
 package utils;
 
-import models.Furniture;
-import models.Room;
-
-import javax.imageio.ImageIO;
-
 import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.BufferedImage;
@@ -13,97 +8,99 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
+import javax.imageio.ImageIO;
+import models.Furniture;
+import models.Room;
 
-// Clears all current selections in the editor canvas
+
 /**
- * ExportManager Class
- * This utility class is responsible for exporting the room
- * design created in the RoomCraft Designer application.
+ * Utility class responsible for exporting room designs from the RoomCraft application.
+ * <p>
+ * Provides two primary export features:
+ * <ul>
+ *   <li>High-resolution PNG rendering of the 2D floor plan with measurements and labels</li>
+ *   <li>HTML-formatted Bill of Materials (BOM) report listing all placed furniture</li>
+ * </ul>
  * 
- * It provides two main exporting functionalities:
- * 1. Exporting the room floor plan as a high-resolution PNG image.
- * 2. Generating a Bill of Materials (BOM) report in HTML format
- *    listing all furniture items placed inside the room.
- * 
- * Contribution;
- * Measurements, Labels, and Export functionality.
+ * @author [10953373 Udawaththa Wijegunawardhana]
+ * @version 2.0
+ * @since PUSL3122 Group Project
  */
 public class ExportManager {
 
     /**
-     * Exports the 2D room layout as a high-resolution PNG image.
-     * 
-     * The method renders the room including:
-     * - Background and borders
-     * - Room dimensions and title information
-     * - Floor color
-     * - Grid layout for measurement reference
-     * - Furniture objects with labels
-     * - Dimension arrows showing room measurements
-     * 
-     * @param room The Room object containing layout and furniture data
-     * @param file The destination file where the PNG image will be saved
-     * @throws IOException if the image cannot be written to disk
+     * Exports the current room layout as a high-resolution PNG image.
+     * <p>
+     * The generated image includes:
+     * <ul>
+     *   <li>Branded title bar with room dimensions and area</li>
+     *   <li>Scaled and centered room floor with selected color</li>
+     *   <li>50 cm reference grid</li>
+     *   <li>Furniture items with rotation support and centered labels</li>
+     *   <li>Dimension lines with arrows and labels for width and depth</li>
+     * </ul>
+     *
+     * @param room the Room object containing layout and furniture information
+     * @param file target file for saving the PNG image
+     * @throws IOException if an error occurs during image writing
      */
     public static void exportToPNG(Room room, File file) throws IOException {
 
-        // Define the image resolution for exporting
+
+        // Export resolution (chosen to balance quality and file size)
         int W = 1600, H = 1200;
 
-        // Create buffered image and graphic context
+        
         BufferedImage img = new BufferedImage(W, H, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2 = img.createGraphics();
 
-        // Enable rendering enhancements 
+        // Enable high-quality rendering
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-        // Background color for the exported image
+        // Background 
         g2.setColor(new Color(248, 248, 252));
         g2.fillRect(0, 0, W, H);
 
-        // Draw outer border around the image
+        // Thin outer frame
         g2.setColor(new Color(200, 205, 220));
         g2.setStroke(new BasicStroke(2));
         g2.drawRect(2, 2, W - 4, H - 4);
 
-        // Title bar of the exported image - top
+        // Header section
         g2.setColor(new Color(20, 30, 65));
         g2.fillRect(0, 0, W, 55);
 
-        // Display application title
         g2.setColor(Color.WHITE);
         g2.setFont(new Font("Segoe UI", Font.BOLD, 22));
         g2.drawString("RoomCraft Designer — Floor Plan", 20, 36);
 
-        // Display room dimension information
+        // Room metadata
         g2.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         String info = String.format("Room: %.1fm × %.1fm  |  Area: %.1f m²",
                 room.getWidth() / 100.0, room.getDepth() / 100.0, room.getAreaM2());
         g2.drawString(info, W - g2.getFontMetrics().stringWidth(info) - 20, 36);
 
-        // Calculate scaling factor so the room fits inside the image
+        // Compute scaling to fit room inside safe drawing area
         int pad = 80;
         double maxW = W - pad * 2;
         double maxH = H - 55 - pad * 2;
         double scale = Math.min(maxW / room.getWidth(), maxH / room.getDepth());
 
-        // Calculate offsets to center the room layout
         double offX = (W - room.getWidth() * scale) / 2.0;
         double offY = 55 + (H - 55 - room.getDepth() * scale) / 2.0;
 
-        // Apply translation and scaling transformations
+        // Apply view transformation
         g2.translate(offX, offY);
         g2.scale(scale, scale);
 
-        // room floor using the selected floor color
+        //  Draw floor 
         g2.setColor(room.getFloorColor());
         g2.fillRect(0, 0, (int) room.getWidth(), (int) room.getDepth());
 
-        // Grid (50cm) overlay to help visualize scale
+        // 50 cm reference grid
         g2.setColor(new Color(0, 0, 0, 18));
         g2.setStroke(new BasicStroke(0.5f));
-
         for (double x = 0; x <= room.getWidth(); x += 50) {
             g2.draw(new Line2D.Double(x, 0, x, room.getDepth()));
         }
@@ -111,33 +108,30 @@ public class ExportManager {
             g2.draw(new Line2D.Double(0, y, room.getWidth(), y));
         }
 
-        // Room outer outline of the room
+        // Room boundary
         g2.setColor(new Color(30, 40, 80));
         g2.setStroke(new BasicStroke(3));
         g2.drawRect(0, 0, (int) room.getWidth(), (int) room.getDepth());
 
-        // Render all furniture objects placed in the room
+        // Render each furniture item
         for (Furniture f : room.getFurnitureList()) {
-
-            // Calculate center point for rotation
             double cx = f.getX() + f.getWidth() / 2.0;
             double cy = f.getY() + f.getDepth() / 2.0;
 
             AffineTransform old = g2.getTransform();
 
-            // Apply rotation transformation
             g2.rotate(Math.toRadians(f.getRotation()), cx, cy);
 
-            // Draw furniture body
+            // Furniture fill
             g2.setColor(f.getColor());
             g2.fill(new Rectangle2D.Double(f.getX(), f.getY(), f.getWidth(), f.getDepth()));
 
-            // Draw furniture border
+            // Furniture outline
             g2.setColor(f.getColor().darker());
             g2.setStroke(new BasicStroke(1.5f));
             g2.draw(new Rectangle2D.Double(f.getX(), f.getY(), f.getWidth(), f.getDepth()));
 
-            // Draw furniture label at the center
+            // Centered label
             g2.setColor(Color.WHITE);
             Font labelFont = new Font("Segoe UI", Font.BOLD, (int) Math.max(6, Math.min(14, f.getWidth() / 12)));
             g2.setFont(labelFont);
@@ -148,21 +142,20 @@ public class ExportManager {
             g2.drawString(label,
                     (float) (f.getX() + (f.getWidth() - fm.stringWidth(label)) / 2.0),
                     (float) (f.getY() + f.getDepth() / 2.0 + fm.getAscent() / 2.0 - fm.getDescent()));
-
-                    // Restore previous graphics transformation
+            
             g2.setTransform(old);
         }
 
-        // Reset transformation and draw dimension arrows
+        // Restore identity + view transform to draw dimension annotations
         g2.setTransform(new AffineTransform());
         g2.translate(offX, offY);
         g2.scale(scale, scale);
 
-        // Horizontal room dimension
+        // Horizontal dimension (top)
         drawDimArrow(g2, 0, -30, room.getWidth(), -30,
                 String.format("%.0f cm (%.1f m)", room.getWidth(), room.getWidth() / 100.0), true);
         
-        // Vertical room dimension
+        // Vertical dimension (left)
         drawDimArrow(g2, -30, 0, -30, room.getDepth(),
                 String.format("%.0f cm", room.getDepth()), false);
 
@@ -170,16 +163,27 @@ public class ExportManager {
         ImageIO.write(img, "PNG", file);
     }
 
-    /* Draws dimension arrows used to display room measurements.
-     * This method creates measurement lines with arrowheads and labels.
-    */
+    /**
+     * Draws a dimension line with arrowheads and centered label.
+     * Supports both horizontal and vertical orientations.
+     *
+     * @param g2d    graphics context
+     * @param x1     start x
+     * @param y1     start y
+     * @param x2     end x
+     * @param y2     end y
+     * @param label  measurement text
+     * @param isHorizontal whether the dimension is horizontal
+     */
 
     private static void drawDimArrow(Graphics2D g2, double x1, double y1,
             double x2, double y2, String label, boolean horiz) {
         g2.setColor(new Color(50, 100, 200));
         g2.setStroke(new BasicStroke(1.5f));
         g2.draw(new Line2D.Double(x1, y1, x2, y2));
-        // Arrow heads
+
+
+        // Arrowheads
         if (horiz) {
             g2.draw(new Line2D.Double(x1, y1, x1 + 8, y1 - 4));
             g2.draw(new Line2D.Double(x1, y1, x1 + 8, y1 + 4));
@@ -193,6 +197,7 @@ public class ExportManager {
         }
         g2.setFont(new Font("Segoe UI", Font.BOLD, 11));
         FontMetrics fm = g2.getFontMetrics();
+
         if (horiz)
             g2.drawString(label, (float) ((x1 + x2) / 2 - fm.stringWidth(label) / 2.0), (float) (y1 - 4));
         else {
@@ -204,20 +209,20 @@ public class ExportManager {
     }
 
     /**
-     * Generates a Bill of Materials (BOM) report in HTML format.
+     * Exports a Bill of Materials (BOM) report in well-formatted HTML.
+     * <p>
+     * The report includes:
+     * <ul>
+     *   <li>Room dimensions and calculated floor area</li>
+     *   <li>Tabular list of all furniture items with type, material, size, position, rotation</li>
+     *   <li>Color preview swatch for each item</li>
+     *   <li>Total item count</li>
+     * </ul>
      *
-     * The report contains:
-     * - Room dimensions and area
-     * - List of all furniture items
-     * - Material type
-     * - Size (Width, Depth, Height)
-     * - Position and rotation
-     *
-     * @param room The Room containing furniture objects
-     * @param file The output HTML file
-     * @throws IOException if the file cannot be written
+     * @param room room model containing the furniture list
+     * @param file destination HTML file
+     * @throws IOException if file writing fails
      */
-     
     public static void exportBillOfMaterials(Room room, File file) throws IOException {
         List<Furniture> furniture = room.getFurnitureList();
 
